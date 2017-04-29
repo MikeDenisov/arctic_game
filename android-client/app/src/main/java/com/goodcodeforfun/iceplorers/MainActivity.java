@@ -32,6 +32,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.squareup.seismic.ShakeDetector;
 import com.yayandroid.locationmanager.base.LocationBaseActivity;
 import com.yayandroid.locationmanager.configuration.Configurations;
 import com.yayandroid.locationmanager.configuration.LocationConfiguration;
@@ -47,7 +48,7 @@ import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class MainActivity extends LocationBaseActivity implements OnMapReadyCallback, SensorEventListener {
+public class MainActivity extends LocationBaseActivity implements OnMapReadyCallback, SensorEventListener, ShakeDetector.Listener {
     private static final String[] PERMS_ALL = {
             CAMERA,
             RECORD_AUDIO,
@@ -69,6 +70,15 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     private RuntimePermissionUtils utils;
     private float azimuth;
     private File photoResult;
+    private boolean isCapturingPhoto = false;
+
+
+    public void hearShake() {
+        Toast.makeText(this, "Don't shake me, bro!", Toast.LENGTH_SHORT).show();
+        if (!isCapturingPhoto) {
+            capturePhoto();
+        }
+    }
 
     // The following method is required by the SensorEventListener interface;
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -106,6 +116,12 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mCompass = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        ShakeDetector sd = new ShakeDetector(this);
+        sd.setSensitivity(ShakeDetector.SENSITIVITY_HARD);
+        sd.start(sensorManager);
+
+
         String filename = "cam2_" + Build.MANUFACTURER + "_" + Build.PRODUCT
                 + "_" + new SimpleDateFormat("yyyyMMdd'-'HHmmss", Locale.getDefault()).format(new Date());
 
@@ -138,7 +154,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     }
 
     private void capturePhoto() {
-
+        isCapturingPhoto = true;
         Intent intent;
         String filename = "rear_" + new SimpleDateFormat("yyyyMMdd'-'HHmmss", Locale.getDefault()).format(new Date());
 
@@ -168,6 +184,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
         switch (requestCode) {
 
             case REQUEST_LANDSCAPE:
+                isCapturingPhoto = false;
                 handlePage();
                 startDataCollection();
                 break;
