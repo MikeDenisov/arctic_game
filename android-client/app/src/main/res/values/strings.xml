@@ -8,4 +8,6 @@
     <string name="you_won">OK! You won!</string>
     <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
     <string name="achievement_trivial_victory">yo, good job</string>
+    <string name="achievement_dum_dum">dum dum</string>
+    <string name="leaderboard_highest">highest!</string>
 </resources>
