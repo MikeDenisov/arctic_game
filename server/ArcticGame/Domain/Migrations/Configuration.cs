@@ -25,7 +25,7 @@ namespace Domain.Migrations
                 UserKey = 1,
                 Key = 1,
                 Comment = "chipmunk",
-                LocalPath = "eff6fe18-6b64-4e2c-a554-9b99007f3514.jpg",
+                LocalPath = "0.jpg",
                 TimeStamp = DateTime.Now,
                 Location = new Location()
                 {
