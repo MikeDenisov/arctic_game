@@ -35,7 +35,7 @@ import com.google.example.games.basegameutils.BaseGameUtils;
  *
  * @author Bruno Oliveira (Google)
  */
-public class MainActivity extends Activity
+public class TrivialQuestDemoActivity extends Activity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
 
@@ -71,7 +71,7 @@ public class MainActivity extends Activity
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                 .build();
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_trivial_quest_demo);
 
         // set this class to listen for the button clicks
         findViewById(R.id.button_sign_in).setOnClickListener(this);

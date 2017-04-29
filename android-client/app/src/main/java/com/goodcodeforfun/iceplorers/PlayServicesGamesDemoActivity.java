@@ -9,7 +9,10 @@ import android.util.Log;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.GameHelper;
 
-public class Main2Activity extends AppCompatActivity implements PlayServices {
+public class PlayServicesGamesDemoActivity extends AppCompatActivity implements PlayServices {
+
+    private final static int requestCode = 1;
+    private GameHelper gameHelper;
 
     @Override
     public void signIn() {
@@ -21,7 +24,7 @@ public class Main2Activity extends AppCompatActivity implements PlayServices {
                 }
             });
         } catch (Exception e) {
-            Log.e("MainActivity", "Log in failed: " + e.getMessage() + ".");
+            Log.e("DemoActivity", "Log in failed: " + e.getMessage() + ".");
         }
     }
 
@@ -35,7 +38,7 @@ public class Main2Activity extends AppCompatActivity implements PlayServices {
                 }
             });
         } catch (Exception e) {
-            Log.e("MainActivity", "Log out failed: " + e.getMessage() + ".");
+            Log.e("DemoActivity", "Log out failed: " + e.getMessage() + ".");
         }
     }
 
@@ -83,14 +86,10 @@ public class Main2Activity extends AppCompatActivity implements PlayServices {
         return gameHelper.isSignedIn();
     }
 
-    private GameHelper gameHelper;
-    private final static int requestCode = 1;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_play_services_games_demo);
         gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
         gameHelper.enableDebugLog(false);
 

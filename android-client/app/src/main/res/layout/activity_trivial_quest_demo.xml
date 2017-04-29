@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" style="@style/MainLayout"
-    tools:context=".MainActivity">
+    tools:context=".TrivialQuestDemoActivity">
 
     <!-- MAIN DISPLAY -->
     <FrameLayout style="@style/MainDisplay">
-        <Button android:id="@+id/button_win" android:text="@string/click_me"
-            style="@style/Button" />
+
+        <Button
+            android:id="@+id/button_win"
+            style="@style/Button"
+            android:text="@string/click_me" />
     </FrameLayout>
 
     <!-- SIGN-IN BAR -->
@@ -25,7 +28,9 @@
         <TextView style="@style/SignInOutBarBlurb"
             android:text="@string/you_are_signed_in" />
 
-        <Button style="@style/SignOutButton" android:id="@+id/button_sign_out"
+        <Button
+            android:id="@+id/button_sign_out"
+            style="@style/SignOutButton"
             android:text="@string/sign_out" />
 
     </LinearLayout>
