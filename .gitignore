@@ -1,0 +1,12 @@
+
+android-client/\.idea/
+
+*.rawproto
+
+android-client/build/generated/
+
+android-client/\.gradle/3\.3/taskArtifacts/
+
+*.iml
+
+android-client/local\.properties

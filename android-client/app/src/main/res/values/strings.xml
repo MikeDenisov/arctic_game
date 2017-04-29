@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Iceplorers</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="sign_in_explanation">Sign with Google to upload your achievements and share with friends.</string>
+    <string name="you_are_signed_in">You are signed in with Google.</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="click_me">Click me!</string>
+    <string name="you_won">OK! You won!</string>
+    <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
+    <string name="achievement_trivial_victory">yo, good job</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
+<resources>
+    <string name="app_id">540833851538</string>
+    <string name="package_name">com.goodcodeforfun.iceplorers</string>
+    <string name="achievement_first_achievement">CgkIktHW4d4PEAIQAg</string>
+    <string name="achievement_first_achievement_2">CgkIktHW4d4PEAIQAw</string>
+    <string name="achievement_first_achievement_3">CgkIktHW4d4PEAIQBA</string>
+    <string name="achievement_first_achievement_4">CgkIktHW4d4PEAIQBQ</string>
+    <string name="achievement_first_achievement_5">CgkIktHW4d4PEAIQBg</string>
+    <string name="leaderboard_high_ice_score">CgkIktHW4d4PEAIQAQ</string>
+</resources>
