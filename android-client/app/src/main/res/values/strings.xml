@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Iceplorers</string>
+    <string name="app_name">Tribes Exploration. The Innuit.</string>
     <string name="title_activity_maps">Map</string>
     <string name="sign_in_explanation">Sign with Google to upload your achievements and share with friends.</string>
     <string name="you_are_signed_in">You are signed in with Google.</string>
@@ -18,5 +18,9 @@
     <string name="share">Share</string>
     <string name="finish">Finish</string>
     <string name="msg_perms_missing">Sorry, but we cannot proceed without permission -- try running the app again!</string>
+    <string name="progress_dialog">Processing a photo</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="result_dialog_title">New point</string>
+    <string name="positive">Send</string>
 
 </resources>

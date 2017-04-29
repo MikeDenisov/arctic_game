@@ -1,6 +1,8 @@
 package com.goodcodeforfun.iceplorers;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.yayandroid.locationmanager.LocationManager;
 
@@ -13,6 +15,12 @@ public class IceplorersApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         LocationManager.enableLog(true);
+    }
+
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
     }
 }

@@ -39,7 +39,7 @@ public class LocationService extends LocationBaseService {
         // calling super is required when extending from LocationBaseService
         super.onStartCommand(intent, flags, startId);
 
-        if(!isLocationRequested) {
+        if (!isLocationRequested) {
             isLocationRequested = true;
             getLocation();
         }
