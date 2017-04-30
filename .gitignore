@@ -1,12 +1,20 @@
-
 android-client/\.idea/
-
 *.rawproto
-
 android-client/build/generated/
-
 android-client/\.gradle/3\.3/taskArtifacts/
-
 *.iml
 
 android-client/local\.properties
+server/ArcticGame/packages/
+server/ArcticGame/SelfHost/obj/
+server/ArcticGame/SelfHost/bin/
+server/ArcticGame/Domain/obj/
+server/ArcticGame/Domain/bin/
+server/ArcticGame/CloudService/obj/
+server/ArcticGame/CloudService/csx/Debug/
+server/ArcticGame/ArcticGame/bin/
+server/ArcticGame/ArcticGame/obj/
+bin/
+obj/
+server/ArcticGame/.vs/
+csx/
