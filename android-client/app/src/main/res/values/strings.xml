@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tribes Exploration. The Innuit.</string>
+    <string name="app_name">Tribes history. The Inuit.</string>
     <string name="title_activity_maps">Map</string>
     <string name="sign_in_explanation">Sign with Google to upload your achievements and share with friends.</string>
     <string name="you_are_signed_in">You are signed in with Google.</string>

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 
+import com.facebook.stetho.Stetho;
 import com.yayandroid.locationmanager.LocationManager;
 
 /**
@@ -15,7 +16,7 @@ public class IceplorersApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        Stetho.initializeWithDefaults(this);
         LocationManager.enableLog(true);
     }
 

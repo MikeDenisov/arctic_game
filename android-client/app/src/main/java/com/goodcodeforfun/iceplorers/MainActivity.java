@@ -25,8 +25,8 @@ import com.commonsware.cwac.cam2.Facing;
 import com.commonsware.cwac.cam2.FlashMode;
 import com.commonsware.cwac.cam2.ZoomStyle;
 import com.commonsware.cwac.security.RuntimePermissionUtils;
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.github.clans.fab.FloatingActionButton;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,8 +53,11 @@ import java.util.Locale;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static android.Manifest.permission.CAMERA;
@@ -74,7 +77,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
             FlashMode.OFF,
             FlashMode.AUTO
     };
-    OkHttpClient client = new OkHttpClient();
+    private OkHttpClient client = new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor()).build();
     private SensorManager mSensorManager;
     private Sensor mCompass;
     private ProgressDialog progressDialog;
@@ -85,6 +88,18 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     private float azimuth;
     private File photoResult;
     private boolean isCapturingPhoto = false;
+
+    public static long getFolderSize(File f) {
+        long size = 0;
+        if (f.isDirectory()) {
+            for (File file : f.listFiles()) {
+                size += getFolderSize(file);
+            }
+        } else {
+            size = f.length();
+        }
+        return size;
+    }
 
     public void hearShake() {
         Toast.makeText(this, "Don't shake me, bro!", Toast.LENGTH_SHORT).show();
@@ -169,7 +184,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     private void capturePhoto() {
         isCapturingPhoto = true;
         Intent intent;
-        String filename = "rear_" + new SimpleDateFormat("yyyyMMdd'-'HHmmss", Locale.getDefault()).format(new Date());
+        String filename = "rear_" + new SimpleDateFormat("yyyyMMdd'-'HHmmss", Locale.getDefault()).format(new Date()) + ".jpg";
 
         filename = filename.replaceAll(" ", "_");
 
@@ -205,7 +220,6 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-
     @Override
     public void onProcessTypeChanged(@ProcessType int processType) {
         switch (processType) {
@@ -232,11 +246,12 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
         getLocation();
         //if (getLocationManager().isWaitingForLocation()
         //        && !getLocationManager().isAnyDialogShowing()) {
-            displayProgress();
+        displayProgress();
         //}
     }
 
-    private void dataCollectionCompleted(Location location) {
+    private void dataCollectionCompleted(final Location location) {
+        final float localAzimuth = azimuth;
         MaterialDialog dialog = new MaterialDialog.Builder(this)
                 .title(R.string.result_dialog_title)
                 .customView(R.layout.result_dialog_custom_view, true)// true for wrap in scrollview
@@ -245,13 +260,71 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         Log.e("TODO", "send it out!");
+                        HttpUrl.Builder urlBuilder = HttpUrl.parse("http://arcticgame.cloudapp.net/api/photos/upload").newBuilder();
+                        urlBuilder.addQueryParameter("username", "oman");
+                        urlBuilder.addQueryParameter("comment", "coolStoryBro");
+                        urlBuilder.addQueryParameter("lon", String.valueOf(location.getLongitude()));
+                        urlBuilder.addQueryParameter("lat", String.valueOf(location.getLatitude()));
+                        urlBuilder.addQueryParameter("az", String.valueOf(localAzimuth));
+                        String url = urlBuilder.build().toString();
+
+                        Request request = null;
+                        RequestBody requestBody = new MultipartBody.Builder()
+                                .setType(MultipartBody.FORM)
+                                .addFormDataPart("", "", RequestBody.create(MediaType.parse("image/jpeg"), photoResult))
+                                .build();
+
+                        request = new Request.Builder()
+                                .url(url)
+                                .addHeader("UniqueId", "ccp")
+                                //.method("POST", RequestBody.create(MediaType.parse("image/jpeg"), photoResult))
+                                .addHeader("Content-Type", "multipart/form-data;")
+                                .post(requestBody)
+                                .build();
+
+                        Log.e("man", request.method());
+                        Log.e("man", String.valueOf(request.headers()));
+                        Log.e("man", String.valueOf(request.toString()));
+
+                        String value = null;
+                        long Filesize = getFolderSize(photoResult) / 1024;//call function and convert bytes into Kb
+                        if (Filesize >= 1024)
+                            value = Filesize / 1024 + " Mb";
+                        else
+                            value = Filesize + " Kb";
+
+
+                        Log.e("man ", value);
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onResponse(Call call, final Response response) throws IOException {
+                                if (!response.isSuccessful()) {
+                                    throw new IOException("Unexpected code " + response);
+                                } else {
+                                    //TODO: handle responce
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            requestData();
+                                            Toast.makeText(MainActivity.this, "Cool! You added a photo!", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     }
                 }).show();
 
         View rootView = dialog.getCustomView();
         if (rootView != null) {
             ((TextView) rootView.findViewById(R.id.locationText)).setText("Lat: " + location.getLatitude() + "\nLon: " + location.getLongitude());
-            ((TextView) rootView.findViewById(R.id.azimuthText)).setText("Azimuth: " + azimuth + "\n");
+            ((TextView) rootView.findViewById(R.id.azimuthText)).setText("Azimuth: " + localAzimuth + "\n");
             final ImageView photoView = (ImageView) rootView.findViewById(R.id.photo);
             Glide.with(MainActivity.this)
                     .load(photoResult)
@@ -371,6 +444,12 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
                 } else {
                     try {
                         JSONArray photos = new JSONArray(response.body().string());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mMap.clear();
+                            }
+                        });
                         for (int i = 0; i < photos.length(); i++) {
                             JSONObject row = photos.getJSONObject(i);
                             final int key = row.getInt("Key");
@@ -385,7 +464,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
                                 @Override
                                 public void run() {
                                     mMap.addMarker(new MarkerOptions().position(markerLocation).flat(true).snippet(String.valueOf(key)).title(comment));
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLocation, 20f));
+                                    //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLocation, 20f));
                                 }
                             });
                         }
