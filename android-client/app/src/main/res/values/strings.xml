@@ -22,5 +22,6 @@
     <string name="please_wait">Please wait...</string>
     <string name="result_dialog_title">New point</string>
     <string name="positive">Send</string>
+    <string name="close">close</string>
 
 </resources>

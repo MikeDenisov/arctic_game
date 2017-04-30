@@ -31,6 +31,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.seismic.ShakeDetector;
 import com.yayandroid.locationmanager.base.LocationBaseActivity;
@@ -39,16 +40,28 @@ import com.yayandroid.locationmanager.configuration.LocationConfiguration;
 import com.yayandroid.locationmanager.constants.FailType;
 import com.yayandroid.locationmanager.constants.ProcessType;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class MainActivity extends LocationBaseActivity implements OnMapReadyCallback, SensorEventListener, ShakeDetector.Listener {
+public class MainActivity extends LocationBaseActivity implements OnMapReadyCallback, SensorEventListener, ShakeDetector.Listener, GoogleMap.OnMarkerClickListener {
     private static final String[] PERMS_ALL = {
             CAMERA,
             RECORD_AUDIO,
@@ -61,6 +74,7 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
             FlashMode.OFF,
             FlashMode.AUTO
     };
+    OkHttpClient client = new OkHttpClient();
     private SensorManager mSensorManager;
     private Sensor mCompass;
     private ProgressDialog progressDialog;
@@ -71,7 +85,6 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     private float azimuth;
     private File photoResult;
     private boolean isCapturingPhoto = false;
-
 
     public void hearShake() {
         Toast.makeText(this, "Don't shake me, bro!", Toast.LENGTH_SHORT).show();
@@ -217,10 +230,10 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
 
     private void startDataCollection() {
         getLocation();
-        if (getLocationManager().isWaitingForLocation()
-                && !getLocationManager().isAnyDialogShowing()) {
+        //if (getLocationManager().isWaitingForLocation()
+        //        && !getLocationManager().isAnyDialogShowing()) {
             displayProgress();
-        }
+        //}
     }
 
     private void dataCollectionCompleted(Location location) {
@@ -326,15 +339,62 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(this);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setRotateGesturesEnabled(true);
         googleMap.getUiSettings().setScrollGesturesEnabled(true);
         googleMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        requestData();
+    }
+
+    private void requestData() {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("http://arcticgame.cloudapp.net/api/photos").newBuilder();
+        //urlBuilder.addQueryParameter("v", "1.0");
+        //urlBuilder.addQueryParameter("user", "vogella");
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code " + response);
+                } else {
+                    try {
+                        JSONArray photos = new JSONArray(response.body().string());
+                        for (int i = 0; i < photos.length(); i++) {
+                            JSONObject row = photos.getJSONObject(i);
+                            final int key = row.getInt("Key");
+                            final String comment = row.getString("Comment");
+                            JSONObject location = row.getJSONObject("Location");
+                            double lon = location.getDouble("Longtitude");
+                            double lat = location.getDouble("Latitude");
+                            double az = location.getDouble("Azimuth");
+                            Log.e("yo", "key " + key);
+                            final LatLng markerLocation = new LatLng(lat, lon);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mMap.addMarker(new MarkerOptions().position(markerLocation).flat(true).snippet(String.valueOf(key)).title(comment));
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLocation, 20f));
+                                }
+                            });
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
 
@@ -404,5 +464,28 @@ public class MainActivity extends LocationBaseActivity implements OnMapReadyCall
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        MaterialDialog dialog = new MaterialDialog.Builder(this)
+                .title(marker.getTitle())
+                .customView(R.layout.marker_dialog_custom_view, true)// true for wrap in scrollview
+                .positiveText(R.string.close)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+
+        View rootView = dialog.getCustomView();
+        if (rootView != null) {
+            final ImageView photoView = (ImageView) rootView.findViewById(R.id.photo);
+            Glide.with(MainActivity.this)
+                    .load("http://arcticgame.cloudapp.net/api/photos/" + marker.getSnippet())
+                    .into(photoView);
+        }
+        return true;
     }
 }
